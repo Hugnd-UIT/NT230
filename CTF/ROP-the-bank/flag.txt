@@ -1,6 +1,1 @@
-UIT{
-    chuc-anh-em-tan-duoc-nang
-    tin-nhan-nang-gui-diu-dang-diu-em
-    chang-con-hai-chu-da-xem
-    chang-con-dau-cham-dau-seen-dau-long
-}
+UIT{r0p_7h3_b4nk_l1k3_4_b055_8f2a1b}
