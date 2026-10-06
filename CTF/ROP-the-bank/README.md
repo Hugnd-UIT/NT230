@@ -2,7 +2,8 @@
 
 **Difficulty**: Hard  
 **Category**: Pwn  
-**Techniques**: Stack Over-read, Ret2Libc, ROP, Bypassing PTY Canonical Mode Escaping
+**Techniques**: Stack Over-read, Ret2Libc, ROP
+**Description**: Bypass the state-of-the-art memory mitigations of this secure ATM and walk away with a shell
 
 ## 1. Phân tích sơ bộ (Recon)
 Đầu tiên, ta kiểm tra các cơ chế bảo vệ của file thực thi (checksec):
@@ -51,10 +52,6 @@ Sử dụng lỗi Buffer Overflow trong `deposit()`, ta xây dựng ROP Chain đ
 2. Địa chỉ `printf@GOT` (đưa vào `rdi`)
 3. Địa chỉ `puts@PLT` (thực thi `puts`)
 4. Địa chỉ hàm `deposit()` (để quay lại nhập ROP chain 2)
-
-**Vấn đề cực khoai - Cơ chế PTY (Canonical Mode):**
-Do server chạy qua `socat` với tuỳ chọn `pty` (pseudo-terminal), nó sẽ xử lý các ký tự đặc biệt (như `\x7f` - Backspace/DEL, `\x1a` - SUSP, `\x13` - XOFF). Các byte ngẫu nhiên của RAM thường chứa các giá trị này (ví dụ: `saved_rbp` luôn chứa `\x7f`), khiến payload bị PTY "gọt" mất trước khi đến được hàm `read()`.
-**Cách bypass:** Thêm byte `\x16` (LNEXT) vào trước *từng byte* của payload để báo cho PTY biết "hãy coi ký tự tiếp theo là chuỗi thô (literal), đừng xử lý nó". Đồng thời, ghi đè `saved_rbp` bằng một chuỗi an toàn như `b"B" * 8`.
 
 *(Lưu ý: Có tỉ lệ 1/256 địa chỉ `printf` bị rơi vào trường hợp byte thứ hai là `\x00`, khiến `puts` không in ra được. Nếu gặp lỗi `struct.error` do ra số âm, chỉ cần chạy lại script).*
 

