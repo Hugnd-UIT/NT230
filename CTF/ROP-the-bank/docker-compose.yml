@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  rop-the-bank:
+    build: .
+    ports:
+      - "1111:1337"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 128m
+    cpus: 0.5
