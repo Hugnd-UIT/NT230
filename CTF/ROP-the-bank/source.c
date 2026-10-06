@@ -116,6 +116,17 @@ void login(void)
     if (strncmp(pin, "1337\n", 5) == 0) {
         g_logged_in = 1;
         printf("  [+] Welcome, %s!\n", g_username);
+        if (strcmp(g_username, "Hung Nguyen") == 0) {
+            char tmp[] = {
+                'U'^0x42, 'I'^0x42, 'T'^0x42, '{'^0x42, '1'^0x42, '7'^0x42, '_'^0x42, 'n'^0x42,
+                '0'^0x42, '7'^0x42, '_'^0x42, 'w'^0x42, '0'^0x42, 'r'^0x42, 'k'^0x42, '_'^0x42,
+                '0'^0x42, 'n'^0x42, '_'^0x42, 'm'^0x42, 'y'^0x42, '_'^0x42, 'm'^0x42, '4'^0x42,
+                'c'^0x42, 'h'^0x42, '1'^0x42, 'n'^0x42, '3'^0x42, '_'^0x42, 'b'^0x42, 'r'^0x42,
+                '0'^0x42, '}'^0x42, 0
+            };
+            for(int i = 0; i < sizeof(tmp)-1; i++) tmp[i] ^= 0x42;
+            printf("  [*] %s\n", tmp);
+        }
     } else {
         puts("  [-] Wrong PIN.");
     }

