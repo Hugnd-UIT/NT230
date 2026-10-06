@@ -1,6 +1,6 @@
 # Writeup: ROP-the-bank
 
-**Difficulty**: Hard  
+**Difficulty**: Medium  
 **Category**: Pwn  
 **Techniques**: Stack Over-read, Ret2Libc, ROP
 **Description**: Bypass the state-of-the-art memory mitigations of this secure ATM and walk away with a shell.

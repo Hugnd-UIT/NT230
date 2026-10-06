@@ -1,0 +1,10 @@
+services:
+  hashicorp-vault:
+    build: .
+    ports:
+      - "1112:1111"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 128m
+    cpus: 0.5
