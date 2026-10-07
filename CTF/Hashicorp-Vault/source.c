@@ -146,6 +146,33 @@ void return_vault() {
     puts("Vault returned.");
 }
 
+void alias_vault() {
+    int src, dst;
+    printf("Source vault (0-9): ");
+    scanf("%d", &src);
+    if (src < 0 || src > 9 || !vaults[src]) {
+        puts("Invalid index or vault empty!");
+        return;
+    }
+
+    printf("Alias vault (0-9): ");
+    scanf("%d", &dst);
+    if (dst < 0 || dst > 9 || dst == src) {
+        puts("Invalid alias index!");
+        return;
+    }
+
+    if (vaults[dst]) {
+        free(vaults[dst]);
+        vaults[dst] = NULL;
+        sizes[dst]  = 0;
+    }
+
+    vaults[dst] = vaults[src];
+    sizes[dst]  = sizes[src];
+    printf("Vault %d aliased to %d.\n", dst, src);
+}
+
 /* ──────────────────────────────────────────────────────────
  * Heap Overflow
  * ──────────────────────────────────────────────────────────*/
@@ -181,8 +208,9 @@ void menu() {
     puts("2. Store Item");
     puts("3. View Item");
     puts("4. Return Vault");
-    puts("5. Resize Vault");
-    puts("6. Exit");
+    puts("5. Alias Vault");
+    puts("6. Resize Vault");
+    puts("7. Exit");
     printf("> ");
 }
 
@@ -200,7 +228,8 @@ int main() {
             case 2: store_item();   break;
             case 3: view_item();    break;
             case 4: return_vault(); break;
-            case 5: resize_vault(); break;
+            case 5: alias_vault();  break;
+            case 6: resize_vault(); break;
             default: puts("Bye!"); exit(0);
         }
     }
